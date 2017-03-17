@@ -1,0 +1,19 @@
+*.bak
+*.txt
+*.vm
+.gitignore
+
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+
+# Intellij project files
+*.iml
+*.ipr
+*.iws
+.idea/
+/pom.xml
