@@ -16,4 +16,3 @@ gen/
 *.ipr
 *.iws
 .idea/
-/pom.xml
