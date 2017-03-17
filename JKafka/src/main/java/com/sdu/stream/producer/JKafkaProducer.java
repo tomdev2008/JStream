@@ -3,7 +3,6 @@ package com.sdu.stream.producer;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.sdu.stream.bean.KafkaMessage;
-import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.PartitionInfo;
 

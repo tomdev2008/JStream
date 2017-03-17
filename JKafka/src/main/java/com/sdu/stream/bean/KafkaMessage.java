@@ -1,8 +1,12 @@
 package com.sdu.stream.bean;
 
+
+
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -11,7 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * */
 public class KafkaMessage {
 
-    public static String []USER_IDS;
+    private static String []USER_IDS;
 
     static {
         USER_IDS = new String[100];
@@ -20,14 +24,20 @@ public class KafkaMessage {
         }
     }
 
-    public static String []ACTIONS = new String[]{"search", "click", "order"};
+    private static String []ACTIONS = new String[]{"search", "click", "order"};
 
-    public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    @Setter
+    @Getter
     private String userId;
 
+    @Setter
+    @Getter
     private String action;
 
+    @Setter
+    @Getter
     private String timestamp;
 
     KafkaMessage(String userId, String action, String timestamp) {
