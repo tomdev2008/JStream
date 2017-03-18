@@ -1,10 +1,12 @@
 package com.sdu.stream.producer;
 
 import com.google.common.base.Strings;
-import com.google.gson.Gson;
 import com.sdu.stream.bean.KafkaMessage;
+import com.sdu.stream.utils.GsonUtils;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.PartitionInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.concurrent.TimeUnit;
  * @author hanhan.zhang
  * */
 public class JKafkaProducer<K,V> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JKafkaProducer.class);
 
     // KafkaProducer线程安全
     private KafkaProducer<K, V> producer;
@@ -66,19 +70,18 @@ public class JKafkaProducer<K,V> {
 
         JKafkaProducer<String, String> producer = new JKafkaProducer<>(props);
 
-        String topic = "JK-Message";
+        String topic = "JK_Message";
 
-        Gson gson = new Gson();
         // 定时产生消息
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             KafkaMessage kafkaMessage = KafkaMessage.createKafkaMessage();
-            String msg = gson.toJson(kafkaMessage);
+            String msg = GsonUtils.toJson(kafkaMessage);
             producer.send(new ProducerRecord<>(topic, msg), (metadata, exp) -> {
                 if (exp != null) {
                     exp.printStackTrace();
                 } else {
-                    System.out.println("topic = " + metadata.topic() + ", offset = " + metadata.offset() + ", partition = " + metadata.partition());
+                    LOGGER.info("response : {}", GsonUtils.toPrettyJson(metadata));
                 }
             });
         }, 100, 500, TimeUnit.MILLISECONDS);
