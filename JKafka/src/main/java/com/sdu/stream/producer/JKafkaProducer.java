@@ -84,7 +84,7 @@ public class JKafkaProducer<K,V> {
                     LOGGER.info("response : {}", GsonUtils.toPrettyJson(metadata));
                 }
             });
-        }, 100, 500, TimeUnit.MILLISECONDS);
+        }, 1, 2, TimeUnit.SECONDS);
     }
 
 }
