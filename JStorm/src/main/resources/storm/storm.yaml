@@ -1,0 +1,5 @@
+topology.debug: true
+storm.scheduler: "com.sdu.jstorm.scheduler.JDefaultSchedule"
+storm.use.default.schedule: false
+supervisor.scheduler.meta:
+  name: "local-supervisor"
