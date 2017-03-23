@@ -77,7 +77,7 @@ public class JDefaultSchedule implements IScheduler {
             return workerSlot1.getPort() - workerSlot2.getPort();
         });
 
-        // 待分配的Executor,并按照ExecutorDetails的startTask升序排序
+        // 待分配的Executor并按照ExecutorDetails的startTask升序排序
         List<ExecutorDetails> needScheduleExecutors = Lists.newArrayList();
         componentToExecutorDetails.forEach((componentId, executorDetail) -> needScheduleExecutors.addAll(executorDetail));
         Collections.sort(needScheduleExecutors, (executorDetail1, executorDetail2) -> executorDetail1.getStartTask() - executorDetail2.getStartTask());

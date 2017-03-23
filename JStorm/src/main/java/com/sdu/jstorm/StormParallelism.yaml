@@ -1,0 +1,83 @@
+一: Storm并行度
+
+  Storm中的拓扑(Topology)有三个部件构成:
+
+  1: 工作进程(woker processes)
+
+    Storm集群有两种节点:
+
+    1': Nimbus
+
+      Storm集群的Master节点, 负责Storm集群代码分发, Topology资源分配并监控Topology运行状态
+
+    2': Supervisor
+
+      Storm集群的Worker节点, Supervisor负责监听Nimbus分配给它执行的任务,据此启动或停止执行任务的工作进程.
+
+      Supervisor节点配置参数supervisor.slots.ports设置该节点可启动的工作进程监听端口(即配置n个端口则该节点可启动n个工作进程).
+
+    Note:
+
+      1': Storm发布任务时, 可通过org.apache.storm.Config.setNumWorkers()设置Topology的工作进程数
+
+      2': Storm可动态调整Topology的工作进程并行度
+
+          storm rebalance topology-name -n new-work-num   // 调整Topology的工作进程为new-work-num, 提高并行度
+
+  2: 执行器(executore)
+
+    工作进程中的线程称为'Executor', Executor线程会启动一个消息循环线程用于接收、处理和发送消息, 当Executor收到某Task消息, 则会调用
+
+    该Task对应的处理逻辑对消息进行处理
+
+    Note:
+
+      1': Storm发布任务时, 可通过org.apache.storm.topology.TopologyBuilder.setSpout(name, spout, parallelism)设置Spout
+
+          执行器并行度, 同理通过TopologyBuilder.setBolt()设置Bolt执行器并行度
+
+      2': Storm可动态调整Topology的执行器并行度
+
+          storm rebalance topology-name -e component=parallelism  // 调整Topology中Component的并行度
+
+  3: 任务(task)
+
+    Storm集群中最小处理单元, Executor中可以包含一个或多个Task, 默认情况下: 一个Executor包含一个Task.
+
+    Note:
+
+      1': Task实质为Spout、Bolt、AckBolt
+
+      2': 提高Task任务数量(并不能提高并行度)可为后期进行弹性计算(rebalance)即后期动态调整某一组件的并行度. 因为当Topology提交到集群
+
+          后Task任务数目就不能改变
+
+  4: 部件关系
+
+    Storm Topology配置如下:
+
+    +--------------------------------------------------------------------------------------------+
+    |  Config conf = new Config();                                                               |
+    |  conf.setNumWorkers(2); // use two worker processes                                        |
+    |                                                                                            |
+    |  topologyBuilder.setSpout("blue-spout", new BlueSpout(), 2); // set parallelism hint to 2  |
+    |                                                                                            |
+    |  topologyBuilder.setBolt("green-bolt", new GreenBolt(), 2)                                 |
+    |                 .setNumTasks(4)                                                            |
+    |                 .shuffleGrouping("blue-spout");                                            |
+    |                                                                                            |
+    |  topologyBuilder.setBolt("yellow-bolt", new YellowBolt(), 6)                               |
+    |                 .shuffleGrouping("green-bolt");                                            |
+    |                                                                                            |
+    |   StormSubmitter.submitTopology("mytopology", conf, topologyBuilder.createTopology());     |
+    +--------------------------------------------------------------------------------------------+
+
+    分析:
+
+    1': Topology[mytopology]设置工作进程并行度2(即启动两个JVM进程)
+
+    2': 组件Spout[blue-bolt]设置Executor并行度2(即启动两个线程), Task并行度默认1(即一个线程中包含一个Task)
+
+    3': 组件Bolt[green-bolt]设置Executor并行度2(即启动两个线程), Task并行度4(即一个线程中包含两个Task)
+
+    4': 组件Bolt[yellow-bolt]设置Executor并行度6(即启动六个线程), Task并行度1(即一个线程中包含一个Task)

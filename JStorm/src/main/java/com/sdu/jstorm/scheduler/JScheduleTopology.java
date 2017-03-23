@@ -28,6 +28,8 @@ public class JScheduleTopology {
         // builder
         TopologyBuilder topologyBuilder = new TopologyBuilder();
 
+        // kafka spout
+
         // spout
         String spoutStreamId = "topology.flow.cycle.spout.stream";
         String spoutComponentName = "sentence.cycle.spout";
