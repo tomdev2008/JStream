@@ -20,9 +20,9 @@ import java.util.Map;
  *
  * @author hanhan.zhang
  * */
-public class WokerMonitorHook implements IWorkerHook {
+public class JWorkerMonitorHook implements IWorkerHook {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WokerMonitorHook.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JWorkerMonitorHook.class);
 
     private int _workPort;
 

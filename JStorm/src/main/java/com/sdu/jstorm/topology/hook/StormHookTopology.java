@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.sdu.jstorm.common.FixedCycleSpout;
 import com.sdu.jstorm.common.operation.impl.CycleTupleGenerator;
 import com.sdu.jstorm.topology.hook.task.TaskMonitorHook;
-import com.sdu.jstorm.topology.hook.worker.WokerMonitorHook;
+import com.sdu.jstorm.topology.hook.worker.JWorkerMonitorHook;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.topology.TopologyBuilder;
@@ -26,24 +26,7 @@ public class StormHookTopology {
         TopologyBuilder topologyBuilder = new TopologyBuilder();
 
         // 设置工作节点监控
-        topologyBuilder.addWorkerHook(new WokerMonitorHook());
-
-        String requestStreamId = "topology.request.stream";
-        String requestFlag = "request";
-        String responseStreamId = "topology.response.stream";
-        String responseFlag = "response";
-        List<StreamDesc> streamDescs = Lists.newArrayList(StreamDesc.builder()
-                                                                    .streamId(requestStreamId)
-                                                                    .flag(requestFlag)
-                                                                    .direct(false)
-                                                                    .fields(new Fields("log"))
-                                                                    .build(),
-                                                          StreamDesc.builder()
-                                                                    .streamId(responseStreamId)
-                                                                    .flag(responseFlag)
-                                                                    .direct(false)
-                                                                    .fields(new Fields("log"))
-                                                                  .build());
+        topologyBuilder.addWorkerHook(new JWorkerMonitorHook());
 
         // spout
         ArrayList<List<Object>> dataSource = Lists.newArrayList(new Values("request: request log from ip 192.12.1.67"),
@@ -55,17 +38,6 @@ public class StormHookTopology {
         topologyBuilder.setSpout ("log.cycle.spout", cycleSpout, 1);
 
 
-        // bolt
-        MultiStreamBolt multiStreamBolt = new MultiStreamBolt(streamDescs);
-        StreamPrintBolt requestPrintBolt = new StreamPrintBolt(requestStreamId, false);
-        StreamPrintBolt responsePrintBolt = new StreamPrintBolt(responseStreamId, false);
-        topologyBuilder.setBolt("multiple.stream.bolt", multiStreamBolt, 1)
-                        .shuffleGrouping("log.cycle.spout", spoutStreamId);
-
-        topologyBuilder.setBolt("request.print.bolt", requestPrintBolt, 1)
-                        .shuffleGrouping("multiple.stream.bolt", requestStreamId);
-        topologyBuilder.setBolt("response.print.bolt", responsePrintBolt, 1)
-                        .shuffleGrouping("multiple.stream.bolt", responseStreamId);
 
 
         Config config = new Config();
