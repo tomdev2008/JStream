@@ -1,6 +1,7 @@
 package com.sdu.jstorm.tuple;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
@@ -10,17 +11,18 @@ import java.util.List;
  * */
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class JStreamTuple {
 
     private List<Object> tuple;
 
     private String stream;
 
-    public List<Object> streamTuple() {
+    public List<Object> tuple() {
         return tuple;
     }
 
-    public String tupleStream() {
+    public String stream() {
         return stream;
     }
 

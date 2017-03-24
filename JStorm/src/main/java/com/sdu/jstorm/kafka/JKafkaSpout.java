@@ -149,7 +149,7 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
                 ack(kafkaMessageId);
             } else {
                 JStreamTuple tuple = kafkaMessageId.getTuple();
-                collector.emit(tuple.tupleStream(), tuple.streamTuple(), kafkaMessageId);
+                collector.emit(tuple.stream(), tuple.tuple(), kafkaMessageId);
                 KAFKA_MESSAGE_EMIT_METRIC.incr();
             }
         }
@@ -226,7 +226,7 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
                 JStreamTuple tuple = spoutConfig.getKafkaTranslator().apply(consumerRecord);
                 if (tuple != null) {
                     kafkaMsgId.setTuple(tuple);
-                    collector.emit(tuple.tupleStream(), tuple.streamTuple(), kafkaMsgId);
+                    collector.emit(tuple.stream(), tuple.tuple(), kafkaMsgId);
                     emitted.add(kafkaMsgId);
                 }
                 KAFKA_MESSAGE_EMIT_METRIC.incr();

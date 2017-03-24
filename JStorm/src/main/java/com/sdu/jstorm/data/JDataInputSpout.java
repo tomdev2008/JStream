@@ -5,6 +5,7 @@ import com.sdu.jstorm.data.internal.JDataSource;
 import com.sdu.jstorm.kafka.internal.JTimer;
 import com.sdu.jstorm.translator.JDataTranslator;
 import com.sdu.jstorm.tuple.JStreamTuple;
+import com.sdu.jstorm.utils.CollectionUtil;
 import org.apache.storm.metric.api.CountMetric;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -76,12 +78,14 @@ public class JDataInputSpout<T> implements IRichSpout {
         }
         T data = this.dataSource.nextData();
         JDataTranslator<T> translator = dataInputConfig.getDataTranslator();
-        JStreamTuple tuple = translator.apply(data);
-        if (tuple != null) {
-            JDataMessageId dataMessageId = new JDataMessageId(translator.getCommitKey(data) ,tuple);
-            collector.emit(tuple.tupleStream(), tuple.streamTuple(), dataMessageId);
-            emited.add(dataMessageId);
-            DATE_EMIT_METRIC.incr();
+        List<JStreamTuple> tuples = translator.apply(data);
+        if (CollectionUtil.isNotEmpty(tuples)) {
+            tuples.forEach(tuple -> {
+                JDataMessageId dataMessageId = new JDataMessageId(translator.getCommitKey(data) ,tuple);
+                collector.emit(tuple.stream(), tuple.tuple(), dataMessageId);
+                emited.add(dataMessageId);
+                DATE_EMIT_METRIC.incr();
+            });
         }
     }
 
@@ -138,7 +142,7 @@ public class JDataInputSpout<T> implements IRichSpout {
                 ack(dataMessageId);
             } else {
                 JStreamTuple tuple = dataMessageId.getTuple();
-                collector.emit(tuple.tupleStream(), tuple.streamTuple(), dataMessageId);
+                collector.emit(tuple.stream(), tuple.tuple(), dataMessageId);
             }
         }
     }

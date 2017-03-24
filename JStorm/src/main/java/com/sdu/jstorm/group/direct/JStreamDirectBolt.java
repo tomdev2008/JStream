@@ -72,7 +72,7 @@ public class JStreamDirectBolt extends BaseRichBolt {
                 Collections.shuffle(directConsumeComponent);
                 int taskId = directConsumeComponent.get(0);
                 streamTuples.forEach(streamTuple ->
-                        collector.emitDirect(taskId, streamTuple.tupleStream(), input, streamTuple.streamTuple())
+                        collector.emitDirect(taskId, streamTuple.stream(), input, streamTuple.tuple())
                 );
             }
             collector.ack(input);
