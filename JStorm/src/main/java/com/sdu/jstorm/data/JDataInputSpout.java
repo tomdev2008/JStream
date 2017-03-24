@@ -5,7 +5,7 @@ import com.sdu.jstorm.data.internal.JDataSource;
 import com.sdu.jstorm.kafka.internal.JTimer;
 import com.sdu.jstorm.translator.JDataTranslator;
 import com.sdu.jstorm.tuple.JStreamTuple;
-import com.sdu.jstorm.utils.CollectionUtil;
+import com.sdu.jstorm.utils.JCollectionUtil;
 import org.apache.storm.metric.api.CountMetric;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -79,7 +79,7 @@ public class JDataInputSpout<T> implements IRichSpout {
         T data = this.dataSource.nextData();
         JDataTranslator<T> translator = dataInputConfig.getDataTranslator();
         List<JStreamTuple> tuples = translator.apply(data);
-        if (CollectionUtil.isNotEmpty(tuples)) {
+        if (JCollectionUtil.isNotEmpty(tuples)) {
             tuples.forEach(tuple -> {
                 JDataMessageId dataMessageId = new JDataMessageId(translator.getCommitKey(data) ,tuple);
                 collector.emit(tuple.stream(), tuple.tuple(), dataMessageId);

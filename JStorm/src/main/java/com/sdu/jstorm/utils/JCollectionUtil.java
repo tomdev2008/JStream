@@ -7,7 +7,7 @@ import java.util.Collection;
  *
  * @author hanhan.zhang
  * */
-public class CollectionUtil {
+public class JCollectionUtil {
 
     public static final <E> boolean isEmpty(Collection<E> collection) {
         if (collection == null) {

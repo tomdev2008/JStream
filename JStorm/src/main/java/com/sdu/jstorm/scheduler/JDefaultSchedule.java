@@ -1,6 +1,6 @@
 package com.sdu.jstorm.scheduler;
 
-import com.sdu.jstorm.utils.CollectionUtil;
+import com.sdu.jstorm.utils.JCollectionUtil;
 import com.sdu.jstorm.utils.Const;
 import org.apache.storm.scheduler.*;
 import org.apache.storm.shade.com.google.common.collect.Lists;
@@ -33,7 +33,7 @@ public class JDefaultSchedule implements IScheduler {
         } else {
             LOGGER.info("采用自定义拓扑调度器");
             Collection<TopologyDetails> topologyDetails = topologies.getTopologies();
-            if (CollectionUtil.isNotEmpty(topologyDetails)) {
+            if (JCollectionUtil.isNotEmpty(topologyDetails)) {
                 topologyDetails.forEach(topologyDetail -> this.scheduleTopology(cluster, topologyDetail));
             }
         }

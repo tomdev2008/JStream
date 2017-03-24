@@ -3,7 +3,7 @@ package com.sdu.jstorm.group.direct;
 import com.google.common.collect.Lists;
 import com.sdu.jstorm.translator.JStreamTranslator;
 import com.sdu.jstorm.tuple.JStreamTuple;
-import com.sdu.jstorm.utils.CollectionUtil;
+import com.sdu.jstorm.utils.JCollectionUtil;
 import org.apache.storm.generated.Grouping;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -68,7 +68,7 @@ public class JStreamDirectBolt extends BaseRichBolt {
     public void execute(Tuple input) {
         try {
             List<JStreamTuple> streamTuples = translator.apply(input);
-            if (CollectionUtil.isNotEmpty(streamTuples)) {
+            if (JCollectionUtil.isNotEmpty(streamTuples)) {
                 Collections.shuffle(directConsumeComponent);
                 int taskId = directConsumeComponent.get(0);
                 streamTuples.forEach(streamTuple ->
