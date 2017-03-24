@@ -1,4 +1,4 @@
-package com.sdu.jstorm.kafka;
+package com.sdu.jstorm.tuple;
 
 import lombok.AllArgsConstructor;
 import lombok.Setter;
@@ -10,13 +10,13 @@ import java.util.List;
  * */
 @Setter
 @AllArgsConstructor
-public class JKafkaTuple {
+public class JStreamTuple {
 
     private List<Object> tuple;
 
     private String stream;
 
-    public List<Object> kafkaTuple() {
+    public List<Object> streamTuple() {
         return tuple;
     }
 

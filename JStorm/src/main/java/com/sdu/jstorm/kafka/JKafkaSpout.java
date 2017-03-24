@@ -6,6 +6,8 @@ import com.sdu.jstorm.kafka.internal.JDefaultKafkaConsumerFactory;
 import com.sdu.jstorm.kafka.internal.JKafkaConsumerFactory;
 import com.sdu.jstorm.kafka.internal.JOffsetManager;
 import com.sdu.jstorm.kafka.internal.JTimer;
+import com.sdu.jstorm.translator.JKafkaTranslator;
+import com.sdu.jstorm.tuple.JStreamTuple;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.storm.metric.api.CountMetric;
@@ -146,8 +148,8 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
                 LOGGER.debug("消息[{}]已达到失败重试次数限制, 丢弃该消息", kafkaMessageId);
                 ack(kafkaMessageId);
             } else {
-                JKafkaTuple tuple = kafkaMessageId.getTuple();
-                collector.emit(tuple.tupleStream(), tuple.kafkaTuple(), kafkaMessageId);
+                JStreamTuple tuple = kafkaMessageId.getTuple();
+                collector.emit(tuple.tupleStream(), tuple.streamTuple(), kafkaMessageId);
                 KAFKA_MESSAGE_EMIT_METRIC.incr();
             }
         }
@@ -221,10 +223,10 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
             } else if (emitted.contains(kafkaMsgId)) {
                 LOGGER.trace("消息[{}]已被发送, 跳过该条消息", consumerRecord);
             } else {
-                JKafkaTuple tuple = spoutConfig.getKafkaTranslator().apply(consumerRecord);
+                JStreamTuple tuple = spoutConfig.getKafkaTranslator().apply(consumerRecord);
                 if (tuple != null) {
                     kafkaMsgId.setTuple(tuple);
-                    collector.emit(tuple.tupleStream(), tuple.kafkaTuple(), kafkaMsgId);
+                    collector.emit(tuple.tupleStream(), tuple.streamTuple(), kafkaMsgId);
                     emitted.add(kafkaMsgId);
                 }
                 KAFKA_MESSAGE_EMIT_METRIC.incr();
@@ -251,7 +253,7 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        JTranslator<K, V> translator = spoutConfig.getKafkaTranslator();
+        JKafkaTranslator<K, V> translator = spoutConfig.getKafkaTranslator();
         translator.streams().forEach(streamName ->
             declarer.declareStream(streamName, false, translator.getFieldsFor(streamName))
         );

@@ -1,4 +1,4 @@
-package com.sdu.jstorm.topology.group.bolt;
+package com.sdu.jstorm.group.bolt;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;

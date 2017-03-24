@@ -1,7 +1,7 @@
-package com.sdu.jstorm.topology.group.router.bolt;
+package com.sdu.jstorm.group.router.bolt;
 
 import com.google.common.collect.Lists;
-import com.sdu.jstorm.topology.group.router.help.StreamDesc;
+import com.sdu.jstorm.group.router.help.StreamDesc;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.storm.generated.Grouping;
 import org.apache.storm.task.OutputCollector;

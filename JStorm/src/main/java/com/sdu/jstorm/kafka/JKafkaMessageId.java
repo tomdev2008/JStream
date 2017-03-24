@@ -1,5 +1,6 @@
 package com.sdu.jstorm.kafka;
 
+import com.sdu.jstorm.tuple.JStreamTuple;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -16,7 +17,7 @@ public class JKafkaMessageId {
 
     @Setter
     @Getter
-    private JKafkaTuple tuple;
+    private JStreamTuple tuple;
 
     // true if the record was emitted using a form of collector.emit(...).
     // false when skipping null tuples as configured by the user in KafkaSpoutConfig

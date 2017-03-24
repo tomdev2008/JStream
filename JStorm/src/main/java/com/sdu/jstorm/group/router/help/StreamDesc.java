@@ -1,4 +1,4 @@
-package com.sdu.jstorm.topology.group.router.help;
+package com.sdu.jstorm.group.router.help;
 
 import lombok.Builder;
 import lombok.Getter;

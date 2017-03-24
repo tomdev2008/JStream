@@ -1,9 +1,9 @@
-package com.sdu.jstorm.topology.group;
+package com.sdu.jstorm.group;
 
 import com.sdu.jstorm.common.FixedCycleSpout;
 import com.sdu.jstorm.common.operation.impl.CycleTupleGenerator;
-import com.sdu.jstorm.topology.group.bolt.SentenceSplitBolt;
-import com.sdu.jstorm.topology.group.bolt.WordSumBolt;
+import com.sdu.jstorm.group.bolt.SentenceSplitBolt;
+import com.sdu.jstorm.group.bolt.WordSumBolt;
 import com.sdu.jstorm.utils.Const;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;

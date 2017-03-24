@@ -1,11 +1,11 @@
-package com.sdu.jstorm.topology.group;
+package com.sdu.jstorm.group;
 
 import com.google.common.collect.Lists;
 import com.sdu.jstorm.common.FixedCycleSpout;
 import com.sdu.jstorm.common.operation.impl.CycleTupleGenerator;
-import com.sdu.jstorm.topology.group.router.bolt.MultiStreamBolt;
-import com.sdu.jstorm.topology.group.router.bolt.StreamPrintBolt;
-import com.sdu.jstorm.topology.group.router.help.StreamDesc;
+import com.sdu.jstorm.group.router.bolt.MultiStreamBolt;
+import com.sdu.jstorm.group.router.bolt.StreamPrintBolt;
+import com.sdu.jstorm.group.router.help.StreamDesc;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.topology.TopologyBuilder;

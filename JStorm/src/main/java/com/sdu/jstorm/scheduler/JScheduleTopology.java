@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sdu.jstorm.kafka.JKafkaSpout;
 import com.sdu.jstorm.kafka.JKafkaSpoutConfig;
-import com.sdu.jstorm.kafka.JKafkaTuple;
-import com.sdu.jstorm.kafka.JTranslator;
-import com.sdu.jstorm.test.JKafkaPrintBolt;
-import com.sdu.jstorm.utils.GsonUtils;
+import com.sdu.jstorm.tuple.JStreamTuple;
+import com.sdu.jstorm.translator.JKafkaTranslator;
+import com.sdu.jstorm.test.JStreamPrintBolt;
+import com.sdu.jstorm.utils.JGsonUtils;
 import com.sdu.jstorm.utils.JKafkaMessage;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
@@ -41,17 +40,17 @@ public class JScheduleTopology {
         // builder
         TopologyBuilder topologyBuilder = new TopologyBuilder();
 
-        JTranslator<String, String> translator = new JTranslator<String, String>() {
+        JKafkaTranslator<String, String> translator = new JKafkaTranslator<String, String>() {
 
             private String streamName = "kafkaStream";
 
             @Override
-            public JKafkaTuple apply(ConsumerRecord<String, String> record) {
+            public JStreamTuple apply(ConsumerRecord<String, String> record) {
                 String value = record.value();
                 if (Strings.isNotEmpty(value)) {
-                    JKafkaMessage msg = GsonUtils.fromJson(value, JKafkaMessage.class);
+                    JKafkaMessage msg = JGsonUtils.fromJson(value, JKafkaMessage.class);
                     if (msg != null) {
-                        return new JKafkaTuple(new Values(msg.getUserId(), msg.getAction(), msg.getTimestamp()), streamName);
+                        return new JStreamTuple(new Values(msg.getUserId(), msg.getAction(), msg.getTimestamp()), streamName);
                     }
                 }
                 return null;
@@ -85,14 +84,17 @@ public class JScheduleTopology {
         spoutConfig.setKafkaProps(kafkaProps);
 
         JKafkaSpout<String, String> kafkaSpout = new JKafkaSpout<>(spoutConfig);
-        JKafkaPrintBolt printBolt = new JKafkaPrintBolt();
+        JStreamPrintBolt printBolt = new JStreamPrintBolt();
 
         // 构建拓扑
         topologyBuilder.setSpout("kafkaSpout", kafkaSpout, 1);
-        topologyBuilder.setBolt("kafkaPrintBolt", printBolt, 1)
+        topologyBuilder.setBolt("kafkaPrintBolt", printBolt, 2)
                        .shuffleGrouping("kafkaSpout", "kafkaStream");
 
         Config config = new Config();
+        config.setNumWorkers(1);
+        // Worker与Ack最好为一一对应
+        config.setNumAckers(1);
         config.setDebug(false);
 
         LocalCluster localCluster = new LocalCluster();

@@ -1,5 +1,6 @@
 package com.sdu.jstorm.kafka;
 
+import com.sdu.jstorm.translator.JKafkaTranslator;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -32,13 +33,13 @@ public class JKafkaSpoutConfig<K, V> implements Serializable {
     @Setter
     private ConsumeOffsetStrategy consumeStrategy;
     @Setter
-    private JTranslator<K, V> translator;
+    private JKafkaTranslator<K, V> translator;
 
     public int getMaxRetryTimes() {
         return retryTimes <= 0 ? MAX_RETRY_TIMES : retryTimes;
     }
 
-    public JTranslator<K, V> getKafkaTranslator() {
+    public JKafkaTranslator<K, V> getKafkaTranslator() {
         return translator;
     }
 
