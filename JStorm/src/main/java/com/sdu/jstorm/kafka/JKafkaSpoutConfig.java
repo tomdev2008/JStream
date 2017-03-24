@@ -1,16 +1,15 @@
 package com.sdu.jstorm.kafka;
 
 import lombok.Setter;
-import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
 /**
  * @author hanhan.zhang
  * */
-public class JKafkaSpoutConfig<K, V> {
+public class JKafkaSpoutConfig<K, V> implements Serializable {
 
     private static final int MAX_RETRY_TIMES = 3;
     private static final long MAX_POLL_TIMEOUT_MS = 1000L;
@@ -32,10 +31,6 @@ public class JKafkaSpoutConfig<K, V> {
     private Map<String, Object> kafkaProps;
     @Setter
     private ConsumeOffsetStrategy consumeStrategy;
-    @Setter
-    private Deserializer keyDeserializer;
-    @Setter
-    private Deserializer valueDeserializer;
     @Setter
     private JTranslator<K, V> translator;
 
@@ -65,14 +60,6 @@ public class JKafkaSpoutConfig<K, V> {
 
     public Collection<String> getSubscribeTopic() {
         return topics;
-    }
-
-    public Deserializer getKeyDeserializer() {
-        return keyDeserializer == null ? new StringDeserializer() : keyDeserializer;
-    }
-
-    public Deserializer getValueDeserializer() {
-        return valueDeserializer == null ? new StringDeserializer() : valueDeserializer;
     }
 
     public Map<String, Object> getKafkaProps() {

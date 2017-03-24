@@ -111,7 +111,9 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
                 pollKafkaMessage();
             }
 
-            emitKafkaMessage();
+            if (isEmitKafkaMessage()) {
+                emitKafkaMessage();
+            }
         } else {
             LOGGER.debug("KafkaSpout not initialized. Not sending tuples until initialization completes");
         }
@@ -175,6 +177,7 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
                     } else {
                         // 修改JOffsetManager已提交的Offset记录
                         offsets.forEach((partition, metadata) -> {
+                            LOGGER.info("Kafka消息消费位置提交成功, partition = {}, offset = {}", partition, metadata.offset());
                             JOffsetManager offsetManager = waitingCommitOffset.get(partition);
                             if (offsetManager != null) {
                                 offsetManager.commit(metadata);
@@ -188,13 +191,16 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
 
 
     private void pollKafkaMessage() {
-        ConsumerRecords<K, V> consumerRecords = consumer.poll(spoutConfig.getPollTimeoutMs());
-        if (consumerRecords != null && consumerRecords.partitions() != null) {
-            List<ConsumerRecord<K, V>> waitingToEmitList = new LinkedList<>();
-            consumerRecords.partitions().forEach(partition ->
-                waitingToEmitList.addAll(consumerRecords.records(partition))
-            );
-            waitingToEmit = waitingToEmitList.iterator();
+        for (;;) {
+            ConsumerRecords<K, V> consumerRecords = consumer.poll(spoutConfig.getPollTimeoutMs());
+            if (consumerRecords != null && consumerRecords.partitions() != null) {
+                List<ConsumerRecord<K, V>> waitingToEmitList = new LinkedList<>();
+                consumerRecords.partitions().forEach(partition ->
+                        waitingToEmitList.addAll(consumerRecords.records(partition))
+                );
+                waitingToEmit = waitingToEmitList.iterator();
+                break;
+            }
         }
     }
 
@@ -219,6 +225,7 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
                 if (tuple != null) {
                     kafkaMsgId.setTuple(tuple);
                     collector.emit(tuple.tupleStream(), tuple.kafkaTuple(), kafkaMsgId);
+                    emitted.add(kafkaMsgId);
                 }
                 KAFKA_MESSAGE_EMIT_METRIC.incr();
             }
@@ -263,7 +270,7 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
 
         @Override
         public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-            LOGGER.info("Partitions reassignment: [consumer-group={}, consumer={}, topic-partitions={}]",
+            LOGGER.info("Spout消息Kafka分区信息: [consumer-group={}, consumer={}, topic-partitions={}]",
                     spoutConfig.getConsumerGroupId(), consumer, partitions);
             initialize(partitions);
         }
@@ -292,6 +299,7 @@ public class JKafkaSpout<K, V> extends BaseRichSpout {
                 // 记录TopicPartition的消费位置
                 recordTopicPartitionConsumeOffset(topicPartition, fetchOffset);
             });
+            initialized = true;
         }
 
         private long correctConsumeOffset(TopicPartition partition, OffsetAndMetadata metadata) {

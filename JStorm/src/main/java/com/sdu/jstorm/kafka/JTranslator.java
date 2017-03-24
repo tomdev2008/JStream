@@ -3,13 +3,14 @@ package com.sdu.jstorm.kafka;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.storm.tuple.Fields;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author hanhan.zhang
  * */
-public interface JTranslator<K, V> {
+public interface JTranslator<K, V> extends Serializable {
 
     public static final List<String> DEFAULT_STREAM = Collections.singletonList("default");
 

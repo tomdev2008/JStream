@@ -74,13 +74,13 @@ public class JScheduleTopology {
         Map<String, Object> kafkaProps = Maps.newHashMap();
         kafkaProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         kafkaProps.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000");
+        kafkaProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        kafkaProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 
         JKafkaSpoutConfig<String, String> spoutConfig = new JKafkaSpoutConfig<>();
         spoutConfig.setAutoCommit(false);
-        spoutConfig.setGroupId("JStorm_Message_Test_Group");
+        spoutConfig.setGroupId("JStorm_Kafka_Message_Group");
         spoutConfig.setTopics(Collections.singletonList("JK_Message"));
-        spoutConfig.setKeyDeserializer(new StringDeserializer());
-        spoutConfig.setValueDeserializer(new StringDeserializer());
         spoutConfig.setTranslator(translator);
         spoutConfig.setKafkaProps(kafkaProps);
 
@@ -90,14 +90,13 @@ public class JScheduleTopology {
         // 构建拓扑
         topologyBuilder.setSpout("kafkaSpout", kafkaSpout, 1);
         topologyBuilder.setBolt("kafkaPrintBolt", printBolt, 1)
-                       .shuffleGrouping("kafkaSpout");
+                       .shuffleGrouping("kafkaSpout", "kafkaStream");
 
         Config config = new Config();
         config.setDebug(false);
 
         LocalCluster localCluster = new LocalCluster();
         localCluster.submitTopology("scheduleTopology", config, topologyBuilder.createTopology());
-
     }
 
 }
