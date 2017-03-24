@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author hanhan.zhang
  * */
-public interface JStreamTranslator extends JTranslator{
+public interface JStreamTranslator extends JTranslator {
 
     List<JStreamTuple> apply(Tuple tuple);
 }

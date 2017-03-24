@@ -6,6 +6,7 @@ import com.sdu.jstorm.utils.JGsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseBasicBolt;
@@ -23,6 +24,15 @@ import java.util.Map;
 public class JStreamPrintBolt extends BaseBasicBolt {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JStreamPrintBolt.class);
+
+    private String componentName;
+    private int taskId;
+
+    @Override
+    public void prepare(Map stormConf, TopologyContext context) {
+        componentName = context.getThisComponentId();
+        taskId = context.getThisTaskId();
+    }
 
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
@@ -51,6 +61,10 @@ public class JStreamPrintBolt extends BaseBasicBolt {
         output.setFromStream(tuple.getSourceStreamId());
         output.setFromTask(tuple.getSourceTask());
 
+        // 消息分发组件信息
+        output.setToComponent(componentName);
+        output.setToTask(taskId);
+
         // 消息信息
         List<String> fields = tuple.getFields().toList();
         if (fields != null) {
@@ -70,6 +84,8 @@ public class JStreamPrintBolt extends BaseBasicBolt {
         private String fromComponent;
         private String fromStream;
         private int fromTask;
+        private String toComponent;
+        private int toTask;
         private Map<String, Object> tupleData;
 
         public Output() {

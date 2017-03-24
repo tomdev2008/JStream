@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author hanhan.zhang
  * */
-public class CustomStreamGroup implements CustomStreamGrouping {
+public class JCustomStreamGrouping implements CustomStreamGrouping {
 
     @Override
     public void prepare(WorkerTopologyContext context, GlobalStreamId stream, List<Integer> targetTasks) {

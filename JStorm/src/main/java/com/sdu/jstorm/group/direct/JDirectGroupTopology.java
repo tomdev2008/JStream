@@ -113,6 +113,7 @@ public class JDirectGroupTopology {
         config.setNumWorkers(1);
 
         LocalCluster cluster = new LocalCluster();
+        // TopologyBuilder.createTopology()序列化各组件(属性必须可序列化)
         cluster.submitTopology("directTopology", config, topologyBuilder.createTopology());
 
 
