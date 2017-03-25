@@ -1,6 +1,7 @@
 package com.sdu.jstorm.utils;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Collection Util
@@ -20,4 +21,14 @@ public class JCollectionUtil {
         return !isEmpty(collection);
     }
 
+    public static final <K, V> boolean isEmpty(Map<K, V> map) {
+        if (map == null) {
+            return true;
+        }
+        return map.isEmpty();
+    }
+
+    public static final <K, V> boolean isNotEmpty(Map<K, V> map) {
+        return !isEmpty(map);
+    }
 }

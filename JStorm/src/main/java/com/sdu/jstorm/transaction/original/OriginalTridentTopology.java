@@ -2,7 +2,7 @@ package com.sdu.jstorm.transaction.original;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.sdu.jstorm.topology.hook.task.TaskMonitorHook;
+import com.sdu.jstorm.monitor.hook.JDefaultTaskHook;
 import com.sdu.jstorm.transaction.original.bolt.SentenceSplitTridentBolt;
 import com.sdu.jstorm.transaction.original.bolt.WordSumTridentBolt;
 import com.sdu.jstorm.transaction.original.spout.FixedCycleTridentSpout;
@@ -117,7 +117,7 @@ public class OriginalTridentTopology {
 
         // config
         Config config = new Config();
-        config.put(Config.TOPOLOGY_AUTO_TASK_HOOKS, Lists.newArrayList(TaskMonitorHook.class.getName()));
+        config.put(Config.TOPOLOGY_AUTO_TASK_HOOKS, Lists.newArrayList(JDefaultTaskHook.class.getName()));
         config.put(Const.SEPARATOR, " ");
         config.setDebug(false);
 
