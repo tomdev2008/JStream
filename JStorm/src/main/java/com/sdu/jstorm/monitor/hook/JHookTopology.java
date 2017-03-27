@@ -1,8 +1,6 @@
 package com.sdu.jstorm.monitor.hook;
 
 import com.google.common.collect.Lists;
-import com.sdu.jstorm.common.FixedCycleSpout;
-import com.sdu.jstorm.common.operation.impl.CycleTupleGenerator;
 import com.sdu.jstorm.data.JDataInputConfig;
 import com.sdu.jstorm.data.JDataInputSpout;
 import com.sdu.jstorm.test.JInputData;

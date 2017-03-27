@@ -28,6 +28,16 @@ public class JStreamPrintBolt extends BaseBasicBolt {
     private String componentName;
     private int taskId;
 
+    private JPrintTransfer printTransfer = new JDefaultPrintTransfer();
+
+    public JStreamPrintBolt() {
+
+    }
+
+    public JStreamPrintBolt(JPrintTransfer printTransfer) {
+        this.printTransfer = printTransfer;
+    }
+
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
         componentName = context.getThisComponentId();
@@ -36,7 +46,7 @@ public class JStreamPrintBolt extends BaseBasicBolt {
 
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
-        Output output = transfer(input);
+        Object output = this.printTransfer.transfer(input);
         LOGGER.info("Tuple Output : {}", JGsonUtils.formatJson(output));
     }
 
@@ -45,36 +55,39 @@ public class JStreamPrintBolt extends BaseBasicBolt {
 
     }
 
-    private Output transfer(Tuple tuple) {
-        Output output = new Output();
+    private class JDefaultPrintTransfer implements JPrintTransfer {
+        @Override
+        public Output transfer(Tuple tuple) {
+            Output output = new Output();
 
-        // Ack锚定信息
-        MessageId messageId = tuple.getMessageId();
-        Map<Long, Long> anchorsToIds = messageId.getAnchorsToIds();
-        messageId.getAnchors().forEach(ackInputMsgId -> {
-            Ack ack = new Ack(ackInputMsgId, anchorsToIds.get(ackInputMsgId));
-            output.addAckMsg(ack);
-        });
-
-        // 消息来源组件信息
-        output.setFromComponent(tuple.getSourceComponent());
-        output.setFromStream(tuple.getSourceStreamId());
-        output.setFromTask(tuple.getSourceTask());
-
-        // 消息分发组件信息
-        output.setToComponent(componentName);
-        output.setToTask(taskId);
-
-        // 消息信息
-        List<String> fields = tuple.getFields().toList();
-        if (fields != null) {
-            fields.forEach(field -> {
-                Object data = tuple.getValueByField(field);
-                output.addTupleData(field, data);
+            // Ack锚定信息
+            MessageId messageId = tuple.getMessageId();
+            Map<Long, Long> anchorsToIds = messageId.getAnchorsToIds();
+            messageId.getAnchors().forEach(ackInputMsgId -> {
+                Ack ack = new Ack(ackInputMsgId, anchorsToIds.get(ackInputMsgId));
+                output.addAckMsg(ack);
             });
-        }
 
-        return output;
+            // 消息来源组件信息
+            output.setFromComponent(tuple.getSourceComponent());
+            output.setFromStream(tuple.getSourceStreamId());
+            output.setFromTask(tuple.getSourceTask());
+
+            // 消息分发组件信息
+            output.setToComponent(componentName);
+            output.setToTask(taskId);
+
+            // 消息信息
+            List<String> fields = tuple.getFields().toList();
+            if (fields != null) {
+                fields.forEach(field -> {
+                    Object data = tuple.getValueByField(field);
+                    output.addTupleData(field, data);
+                });
+            }
+
+            return output;
+        }
     }
 
     @Setter
@@ -88,16 +101,16 @@ public class JStreamPrintBolt extends BaseBasicBolt {
         private int toTask;
         private Map<String, Object> tupleData;
 
-        public Output() {
+        Output() {
             ackMsg = Lists.newLinkedList();
             tupleData = Maps.newHashMap();
         }
 
-        public void addTupleData(String key, Object data) {
+        void addTupleData(String key, Object data) {
             tupleData.put(key, data);
         }
 
-        public void addAckMsg(Ack ack) {
+        void addAckMsg(Ack ack) {
             ackMsg.add(ack);
         }
     }
