@@ -1,5 +1,6 @@
 package com.sdu.jstorm.trident;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.sdu.jstorm.data.JDataInputConfig;
 import com.sdu.jstorm.data.JDataInputSpout;
@@ -11,13 +12,18 @@ import com.sdu.jstorm.utils.JTestUtils;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
+import org.apache.storm.redis.trident.state.RedisMapState;
 import org.apache.storm.redis.trident.state.RedisState;
 import org.apache.storm.trident.Stream;
 import org.apache.storm.trident.TridentState;
 import org.apache.storm.trident.TridentTopology;
 import org.apache.storm.trident.fluent.GroupedStream;
+import org.apache.storm.trident.operation.BaseFunction;
 import org.apache.storm.trident.operation.CombinerAggregator;
+import org.apache.storm.trident.operation.Function;
+import org.apache.storm.trident.operation.TridentCollector;
 import org.apache.storm.trident.state.StateFactory;
+import org.apache.storm.trident.testing.FixedBatchSpout;
 import org.apache.storm.trident.tuple.TridentTuple;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
@@ -34,48 +40,30 @@ public class JTridentTopology {
         TridentTopology tridentTopology = new TridentTopology();
 
         // Spout
-        JDataTranslator<JInputData<String>> translator = new JDataTranslator<JInputData<String>>() {
-            @Override
-            public String getCommitKey(JInputData<String> data) {
-                return data.getKey();
-            }
+        FixedBatchSpout spout = new FixedBatchSpout(new Fields("sentence"), 3,
+                                                    new Values("the cow jumped over the moon"),
+                                                    new Values("the man went to the store and bought some candy"),
+                                                    new Values("four score and seven years ago"),
+                                                    new Values("how many apples can you eat"));
+        spout.setCycle(true);
+        Stream inputStream = tridentTopology.newStream("inputStream", spout);
 
+        Function splitFunction = new BaseFunction() {
             @Override
-            public List<JStreamTuple> apply(JInputData<String> data) {
-                List<JStreamTuple> streamTuples = Lists.newLinkedList();
-                streams().forEach(stream -> {
-                    String []words = data.getInputData().split(" ");
+            public void execute(TridentTuple tuple, TridentCollector collector) {
+                String sentence = tuple.getStringByField("sentence");
+                if (!Strings.isNullOrEmpty(sentence)) {
+                    String []words = sentence.split(" ");
                     for (String word : words) {
-                        streamTuples.add(new JStreamTuple(new Values(word), stream));
+                        collector.emit(new Values(word, 1));
                     }
-                });
-                return streamTuples;
-            }
-
-            @Override
-            public boolean isDirectFor(String stream) {
-                return false;
-            }
-
-            @Override
-            public Fields getFieldsFor(String stream) {
-                return new Fields("word");
+                }
             }
         };
-
-        JDataInputConfig<JInputData<String>> inputConfig = new JDataInputConfig<>();
-        inputConfig.setMaxRetryTimes(5);
-        inputConfig.setAutoCommit(false);
-        inputConfig.setAutoCommitPeriodMs(1000);
-        inputConfig.setDataSource(new JTestDataSource(JTestUtils.getData(1000)));
-        inputConfig.setTranslator(translator);
-
-        JDataInputSpout<JInputData<String>> inputSpout = new JDataInputSpout<>(inputConfig);
-
-        Stream inputStream = tridentTopology.newStream("inputStream", inputSpout);
+        Stream wordStream = inputStream.each(new Fields("sentence"), splitFunction, new Fields("word", "count"));
 
         // 按照Word分组
-        GroupedStream groupedStream = inputStream.groupBy(new Fields("word"));
+        GroupedStream groupedStream = wordStream.groupBy(new Fields("word"));
 
         // 聚合算子
         CombinerAggregator<Integer> aggregator = new CombinerAggregator<Integer>() {
@@ -97,16 +85,22 @@ public class JTridentTopology {
 
         // Redis Config
         JedisPoolConfig.Builder builder = new JedisPoolConfig.Builder();
-        builder.setHost("").setPort(0);
+        builder.setHost("localhost").setPort(6379);
 
-        StateFactory factory = new RedisState.Factory(builder.build());
-        TridentState tridentState = groupedStream.persistentAggregate(factory, aggregator, new Fields("word", "count"))
+        StateFactory factory = RedisMapState.opaque(builder.build());
+        TridentState tridentState = groupedStream.persistentAggregate(factory, aggregator, new Fields("sum"))
                                                  .parallelismHint(5);
 
         Config conf = new Config();
         conf.setDebug(false);
         LocalCluster cluster = new LocalCluster();
-        cluster.submitTopology("tridentTopology", conf, tridentTopology.build());
+
+        try {
+            cluster.submitTopology("tridentTopology", conf, tridentTopology.build());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

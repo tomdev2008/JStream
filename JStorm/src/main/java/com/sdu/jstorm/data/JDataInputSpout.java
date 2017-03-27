@@ -56,14 +56,15 @@ public class JDataInputSpout<T> implements IRichSpout {
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
         this.collector = collector;
-        DATE_EMIT_METRIC = context.registerMetric(DATA_EMIT, new CountMetric(), 60);
-        DATA_EMIT_ACK_METRIC = context.registerMetric(DATA_EMIT_ACK, new CountMetric(), 60);
 
         emited = Sets.newHashSet();
         waitingAcked = Sets.newHashSet();
         if (!autoCommit) {
             commitTimer = new JTimer(TIMER_DELAY_MS, dataInputConfig.getAutoCommitPeriodMs(), TimeUnit.MILLISECONDS);
         }
+
+        DATE_EMIT_METRIC = context.registerMetric(DATA_EMIT, new CountMetric(), 60);
+        DATA_EMIT_ACK_METRIC = context.registerMetric(DATA_EMIT_ACK, new CountMetric(), 60);
     }
 
     @Override
